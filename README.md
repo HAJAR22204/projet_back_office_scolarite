@@ -184,7 +184,7 @@ Exemple pour une demande de diplome_deust:
 ##  Workflow Complet
 
 ```
-INTERFACE ÉTUDIANTE          VOTRE API (Laravel)         APOGÉE (MySQL)
+INTERFACE ÉTUDIANTE           API (Laravel)         APOGÉE (MySQL)
       │                             │                          │
       │── POST /api/demandes ──────▶│                          │
       │   (CNE, nom, email, type)   │                          │
