@@ -224,23 +224,124 @@ class DemandeController extends Controller
         ], 200);
     }
 
-    public function statistiques()
-    {
-        $stats = [
-            'total' => Demande::count(),
-            'en_attente' => Demande::where('statut', 'en_attente')->count(),
-            'en_cours' => Demande::where('statut', 'en_cours')->count(),
-            'prete' => Demande::where('statut', 'prete')->count(),
-            'refusee' => Demande::where('statut', 'refusee')->count(),
-            'par_type' => [
-                'attestation_inscription' => Demande::where('type_document', 'attestation_inscription')->count(),
-                'certificat_scolarite' => Demande::where('type_document', 'certificat_scolarite')->count(),
-                'releve_notes' => Demande::where('type_document', 'releve_notes')->count(),
-                'diplome_deust' => Demande::where('type_document', 'diplome_deust')->count(),
-                'retrait_bac' => Demande::where('type_document', 'retrait_bac')->count(),
-            ],
-        ];
+    public function statistiques(Request $request)
+{
+    $periode = $request->get('periode', 'tout');
+    
+    $dateDebut = match($periode) {
+        'aujourd_hui' => Carbon::today(),
+        'cette_semaine' => Carbon::now()->startOfWeek(),
+        'ce_mois' => Carbon::now()->startOfMonth(),
+        'cette_annee' => Carbon::now()->startOfYear(),
+        default => null,
+    };
 
-        return response()->json($stats, 200);
+    $query = Demande::query();
+    
+    if ($dateDebut) {
+        $query->where('date_creation', '>=', $dateDebut);
     }
+
+    $total = (clone $query)->count();
+    $en_attente = (clone $query)->where('statut', 'en_attente')->count();
+    $en_cours = (clone $query)->where('statut', 'en_cours')->count();
+    $prete = (clone $query)->where('statut', 'prete')->count();
+    $refusee = (clone $query)->where('statut', 'refusee')->count();
+
+    $tempsReponseMoyen = (clone $query)
+        ->whereNotNull('date_traitement')
+        ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, date_creation, date_traitement)) as temps_moyen')
+        ->value('temps_moyen');
+
+    $goulots = (clone $query)
+        ->where('statut', 'en_attente')
+        ->where('date_creation', '<', Carbon::now()->subHours(48))
+        ->count();
+
+    $parType = [
+        'attestation_inscription' => (clone $query)->where('type_document', 'attestation_inscription')->count(),
+        'certificat_scolarite' => (clone $query)->where('type_document', 'certificat_scolarite')->count(),
+        'releve_notes' => (clone $query)->where('type_document', 'releve_notes')->count(),
+        'diplome_deust' => (clone $query)->where('type_document', 'diplome_deust')->count(),
+        'retrait_bac' => (clone $query)->where('type_document', 'retrait_bac')->count(),
+    ];
+
+    $parAgent = Demande::whereNotNull('traite_par')
+        ->when($dateDebut, fn($q) => $q->where('date_creation', '>=', $dateDebut))
+        ->with('traitePar')
+        ->selectRaw('traite_par, COUNT(*) as total, 
+                     SUM(CASE WHEN statut = "prete" THEN 1 ELSE 0 END) as validees,
+                     SUM(CASE WHEN statut = "refusee" THEN 1 ELSE 0 END) as refusees,
+                     AVG(TIMESTAMPDIFF(HOUR, date_creation, date_traitement)) as temps_moyen')
+        ->groupBy('traite_par')
+        ->get()
+        ->map(function($item) {
+            return [
+                'agent' => $item->traitePar ? $item->traitePar->prenom . ' ' . $item->traitePar->nom : 'Inconnu',
+                'total_traitees' => $item->total,
+                'validees' => $item->validees,
+                'refusees' => $item->refusees,
+                'temps_moyen_heures' => round($item->temps_moyen, 1),
+            ];
+        });
+
+    $evolutionParJour = Demande::when($dateDebut, fn($q) => $q->where('date_creation', '>=', $dateDebut))
+        ->selectRaw('DATE(date_creation) as jour, COUNT(*) as total')
+        ->groupBy('jour')
+        ->orderBy('jour')
+        ->get();
+
+    return response()->json([
+        'periode' => $periode,
+        'resume' => [
+            'total' => $total,
+            'en_attente' => $en_attente,
+            'en_cours' => $en_cours,
+            'prete' => $prete,
+            'refusee' => $refusee,
+            'taux_traitement' => $total > 0 ? round((($prete + $refusee) / $total) * 100, 1) : 0,
+        ],
+        'performance' => [
+            'temps_reponse_moyen_heures' => round($tempsReponseMoyen, 1),
+            'demandes_en_retard' => $goulots,
+        ],
+        'par_type_document' => $parType,
+        'par_agent' => $parAgent,
+        'evolution_par_jour' => $evolutionParJour,
+    ], 200);
+}
+    public function historique(Request $request, $cne)
+{
+    $demandes = Demande::with(['traitePar', 'document'])
+        ->where('cne', $cne)
+        ->orderBy('date_creation', 'desc')
+        ->get();
+
+    if ($demandes->isEmpty()) {
+        return response()->json([
+            'message' => 'Aucune demande trouvée pour cet étudiant',
+            'cne' => $cne,
+            'historique' => []
+        ], 200);
+    }
+
+    $resume = [
+        'total' => $demandes->count(),
+        'en_attente' => $demandes->where('statut', 'en_attente')->count(),
+        'en_cours' => $demandes->where('statut', 'en_cours')->count(),
+        'prete' => $demandes->where('statut', 'prete')->count(),
+        'refusee' => $demandes->where('statut', 'refusee')->count(),
+    ];
+
+    return response()->json([
+        'cne' => $cne,
+        'etudiant' => [
+            'nom' => $demandes->first()->nom,
+            'prenom' => $demandes->first()->prenom,
+            'code_apogee' => $demandes->first()->code_apogee,
+        ],
+        'resume' => $resume,
+        'historique' => $demandes,
+    ], 200);
+}
 }

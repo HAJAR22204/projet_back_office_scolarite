@@ -115,7 +115,6 @@
 
             <p>
                  <strong>Faculté des Sciences et Techniques</strong><br>
-                 <!-- <strong>Lundi - Vendredi : 9h00 - 16h00</strong> -->
             </p>
 
             <p>Cordialement,<br>

@@ -9,6 +9,7 @@ Route::post('auth/login', [AuthController::class, 'login']);
 Route::post('auth/register', [AuthController::class, 'register']);
 
 Route::post('demandes', [DemandeController::class, 'store']);
+Route::get('etudiants/{cne}/historique', [DemandeController::class, 'historique']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);

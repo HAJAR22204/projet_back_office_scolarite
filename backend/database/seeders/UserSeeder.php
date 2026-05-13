@@ -11,27 +11,21 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'nom' => 'Bennani',
-            'prenom' => 'Mohammed',
-            'email' => 'chef@scolarite.ma',
+            'nom' => 'hajar',
+            'prenom' => 'zegour',
+            'email' => 'hajarzegour22@gmail.com',
             'password' => Hash::make('password'),
             'role' => 'chefScolarite',
         ]);
 
         User::create([
-            'nom' => 'Alami',
-            'prenom' => 'Fatima',
-            'email' => 'agent1@scolarite.ma',
+            'nom' => 'haj',
+            'prenom' => 'zeg',
+            'email' => 'h.zegour9169@uca.ac.ma',
             'password' => Hash::make('password'),
             'role' => 'agentScolarite',
         ]);
 
-        User::create([
-            'nom' => 'Tazi',
-            'prenom' => 'Omar',
-            'email' => 'agent2@scolarite.ma',
-            'password' => Hash::make('password'),
-            'role' => 'agentScolarite',
-        ]);
+    
     }
 }

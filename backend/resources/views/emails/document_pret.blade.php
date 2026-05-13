@@ -97,7 +97,6 @@
             <p>Vous pouvez récupérer votre document au guichet de la scolarité :</p>
             <p>
                  <strong>Faculté des Sciences et Techniques</strong><br>
-                 <!-- <strong>Lundi - Vendredi : 9h00 - 16h00</strong><br> -->
                  <strong>Munissez-vous de votre carte d'étudiant</strong>
             </p>
 
