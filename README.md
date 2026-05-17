@@ -167,7 +167,7 @@ Exemple pour une demande de diplome_deust:
 
 ---
 
-##   10 : Notifications Email 
+##   Notifications Email 
 
 ### Emails envoyés automatiquement
 
@@ -180,6 +180,33 @@ Exemple pour une demande de diplome_deust:
 
 ---
 
+## Interface Admin
+
+###  Login Admin
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6624c164-7c52-42bf-85f5-558ea3aca342" />
+
+### Dashboard Admin
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/0cbe3b83-0b61-4ab7-8a49-e14487ca1d67" />
+
+### Liste des utilisateurs
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d1d3734c-e3c2-4be5-9f73-8dcdccfb1691" />
+
+### Créer un utilisateur
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/f1f363e3-ab5c-4afe-9c36-6f98e9e1d4c4" />
+
+### Désactiver un utilisateur
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9e067112-7699-466b-9f56-fb30aaa70288" />
+
+### Vérifier que l'utilisateur désactivé ne peut plus se connecter
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2c83dffb-e660-4c20-aad9-4fad6a64cf5b" />
+
+---
 
 ##  Workflow Complet
 
